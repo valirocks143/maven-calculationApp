@@ -40,7 +40,7 @@ pipeline {
         stage('deply') {
             steps {
             withCredentials([usernameColonPassword(credentialsId: 'tomcatcredential', variable: 'tomcatservercredential')]) {
-           sh "curl -v -u ${tomcatservercredential} -T /var/lib/jenkins/workspace/mvn_calculater/target/CalculationMavenApp.war 'http://ec2-3-145-19-193.us-east-2.compute.amazonaws.com:8080/manager/text/deploy?path=/mvn_calculater&update=true'"
+           sh "curl -v -u ${tomcatservercredential} -T /var/lib/jenkins/workspace/mvn_calculater/target/CalculationMavenApp.war 'http://ec2-3-142-173-132.us-east-2.compute.amazonaws.com:8080/manager/text/deploy?path=/mvn_calculater&update=true'"
                 }
             }
         }
