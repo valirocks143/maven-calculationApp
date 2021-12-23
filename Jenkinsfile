@@ -1,27 +1,28 @@
 pipeline {
     agent any
-
     tools {
-        // Install the Maven version configured as "M3" and add it to the path.
-        maven "Maven 3.6"
+        maven "maven 3.8.4"
     }
-
     stages {
-        stage('getscm') {
+        stage('scm') {
             steps {
-                // Get some code from a GitHub repository
-               git branch: 'dev', credentialsId: 'git-credentials', url: 'https://github.com/markondareddy/maven-calculationApp.git'
-
+              git branch: 'dev', credentialsId: 'git-credentials', url: 'https://github.com/valirocks143/maven-calculationApp.git'
             }
         }
-        stage('maven') {
+    
+        stage('Clean') {
              steps {
                 // Run Maven on a Unix agent.
-                sh "mvn -Dmaven.test.failure.ignore=true clean package"
-                
-            }
+                sh "mvn -Dmaven.test.failure.ignore=true clean"
+                }
         }
-        
+  
+        stage('Package') {
+             steps {
+                // Run Maven on a Unix agent.
+                sh "mvn -Dmaven.test.failure.ignore=true package"
+             }
+        }
         stage('Artifact') {
             steps {
                 // maven artifacts
@@ -29,23 +30,20 @@ pipeline {
               // archiveArtifacts artifacts: 'target/*.war', followSymlinks: false
             }
         }
-        
-        stage('Deploy') {
+        stage('connection to tomcat server') {
             steps {
-              withCredentials([sshUserPrivateKey(credentialsId: 'deployment-tomcat', keyFileVariable: '', passphraseVariable: '', usernameVariable: '')]) {
-              sh "curl -v -u 'deployment-tomcat' -T /var/lib/jenkins/workspace/pipeline-project1/target/CalculationMavenApp.war 'http://ec2-54-227-222-119.compute-1.amazonaws.com:8080/manager/text/deploy?path=/pipeline_project1&update=true'"
-              }
+            withCredentials([sshUserPrivateKey(credentialsId: 'linex_credential', keyFileVariable: 'key veriable', passphraseVariable: 'tomcat veriable', usernameVariable: 'vannur key')]) { 
+            echo "sucessfully connected to server"    
+                }
+            }
+        }
+        stage('deply') {
+            steps {
+            withCredentials([usernameColonPassword(credentialsId: 'tomcatcredential', variable: 'tomcatservercredential')]) {
+           sh "curl -v -u ${tomcatservercredential} -T /var/lib/jenkins/workspace/mvn_calculater/target/CalculationMavenApp.war 'http://ec2-3-145-19-193.us-east-2.compute.amazonaws.com:8080/manager/text/deploy?path=/mvn_calculater&update=true'"
+                }
             }
         }
         
     }
-    
-     post {
-        always {
-          emailext attachLog: true, body: 'Jenkins URL - $JOB_URL ', recipientProviders: [developers()], subject: 'Jenkins - $JOB_NAME  - $BUILD_NUMBER ', to: 'bandi15713@gmail.com'  
-            
-        }
-     }
-    
-    
 }
